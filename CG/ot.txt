@@ -1,0 +1,2 @@
+ path in /Users/wayne_tx/Desktop/CG/CG/CG/onesquare_in.pfm
+Height 64 Width 64
