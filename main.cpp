@@ -172,11 +172,11 @@ struct Coordinate {
 
 struct Solution {
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/CG/CG/onesquare_in.pfm";
-    string path_out_C1 = "/Users/wayne_tx/Desktop/CG/CG/CG/onesquare_out_m1.pfm";
-    string path_out_C2 = "/Users/wayne_tx/Desktop/CG/CG/CG/onesquare_out_m2.pfm";
-    string path_out_C2_r2 = "/Users/wayne_tx/Desktop/CG/CG/CG/onesquare_out_m2_r2.pfm";
-    string path_out_C2_r3 = "/Users/wayne_tx/Desktop/CG/CG/CG/onesquare_out_m2_r3.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/onesquare_in.pfm";
+    string path_out_C1 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m1.pfm";
+    string path_out_C2 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2.pfm";
+    string path_out_C2_r2 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2_r2.pfm";
+    string path_out_C2_r3 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2_r3.pfm";
     float* input = pfm_rw.read_pfm<float>(path_in);
     float* output = NULL;
     int imgH = pfm_rw.getHeight();

@@ -1,0 +1,9 @@
+build/
+build.ninja
+build-win.cmd
+.ninja_log
+*.bin
+**/.DS_Store
+*.o
+*.exe
+a.out
