@@ -234,7 +234,7 @@ struct Solution {
         ResetOut();
         JFA();
         pfm_rw.write_pfm<float>(path_out_jfa, output, -1.0f);
-        // fclose(stdout);
+        fclose(stdout);
     }
 
     void Cal1() {
