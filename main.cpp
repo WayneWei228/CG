@@ -342,10 +342,10 @@ struct Solution {
         for (int i = 0; i < imgH; i++) {
             for (int j = 0; j < imgW; j++) {
                 if (input[i * imgW + j] == 0) {
-                    InfoBest[i * imgW + j] = pair{Coordinate{i, j}, 0.0};
+                    InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, 0.0);
                     Seeds.emplace_back(Coordinate{i, j});
                 } else {
-                    InfoBest[i * imgW + j] = pair{Coordinate{i, j}, numeric_limits<float>::max()};
+                    InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, numeric_limits<float>::max());
                 }
             }
         }
