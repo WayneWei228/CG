@@ -1,2 +1,2 @@
- path in /Users/wayne_tx/Desktop/CG/CG/CG/onesquare_in.pfm
-Height 64 Width 64
+ path in /Users/wayne_tx/Desktop/CG/Complex/complex_in.pfm
+Height 80 Width 100
