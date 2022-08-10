@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 #include <algorithm>
-#include <bitset>　/*std::bitset<32>*/
+#include <bitset> /*std::bitset<32>*/
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -177,7 +177,9 @@ struct Solution {
     string path_out_C2_r2 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2_r2.pfm";
     string path_out_C2_r3 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2_r3.pfm";
     string path_out_jfa = "/Users/wayne_tx/Desktop/CG/Complex/singlesharp_out_jfa.pfm";
-    float* input = pfm_rw.read_pfm<float>(path_in);
+    string path_in_win = "C:/CG/singlesharp_in.pfm";
+    string path_out_win = "C:/CG/singlesharp_in.pfm";
+    float* input = pfm_rw.read_pfm<float>(path_in_win);
     float* output = NULL;
     int imgH = pfm_rw.getHeight();
     int imgW = pfm_rw.getWidth();
@@ -215,10 +217,10 @@ struct Solution {
 
     void Solve() {
         // freopen("/Users/wayne_tx/Desktop/CG/ot.txt", "w", stdout);
-        cout << " path in " << path_in << endl;
-        cout << "Height " << imgH << " Width " << imgW << endl;
+        // cout << " path in " << path_in << endl;
+        // cout << "Height " << imgH << " Width " << imgW << endl;
         InitialInput();
-        pfm_rw.write_pfm<float>(path_in, input, -1.0f);
+        pfm_rw.write_pfm<float>(path_in_win, input, -1.0f);
         // ResetOut();
         // Cal1();
         // pfm_rw.write_pfm<float>(path_out_C1, output, -1.0f);
@@ -233,7 +235,7 @@ struct Solution {
         // pfm_rw.write_pfm<float>(path_out_C2_r3, output, -1.0f);
         ResetOut();
         JFA();
-        pfm_rw.write_pfm<float>(path_out_jfa, output, -1.0f);
+        pfm_rw.write_pfm<float>(path_out_win, output, -1.0f);
         // fclose(stdout);
     }
 
