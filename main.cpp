@@ -171,17 +171,17 @@ struct CoordinateHash {
 
 struct Solution {
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/JFA/line_in.pfm";
-    string path_out_BF = "/Users/wayne_tx/Desktop/CG/JFA/line_out_BF.pfm";
-    string path_out_FLD = "/Users/wayne_tx/Desktop/CG/JFA/line_out_FLD.pfm";
-    string path_out_FLD_r2 = "/Users/wayne_tx/Desktop/CG/JFA/line_out_FLD_r2.pfm";
-    string path_out_FLD_r3 = "/Users/wayne_tx/Desktop/CG/JFA/line_out_FLD_r3.pfm";
-    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/JFA/line_out_jfa.pfm";
-    string path_out_rec = "/Users/wayne_tx/Desktop/CG/JFA/line_out_rec.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/JFA/error_in.pfm";
+    string path_out_BF = "/Users/wayne_tx/Desktop/CG/JFA/error_out_BF.pfm";
+    string path_out_FLD = "/Users/wayne_tx/Desktop/CG/JFA/error_out_FLD.pfm";
+    string path_out_FLD_r2 = "/Users/wayne_tx/Desktop/CG/JFA/error_out_FLD_r2.pfm";
+    string path_out_FLD_r3 = "/Users/wayne_tx/Desktop/CG/JFA/error_out_FLD_r3.pfm";
+    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/JFA/error_out_jfa.pfm";
+    string path_out_rec = "/Users/wayne_tx/Desktop/CG/JFA/error_out_rec.pfm";
     string path_in_win = "C:/CG/singlesharp_in.pfm";
     string path_out_win = "C:/CG/singlesharp_in.pfm";
 
-    float* input = pfm_rw.read_pfm<float>(path_in); //
+    float* input = pfm_rw.read_pfm<float>(path_in);  //
     float* output = NULL;
 
     int imgH = pfm_rw.getHeight();
@@ -240,12 +240,12 @@ struct Solution {
         ResetOut();
         Cal2(1);
         pfm_rw.write_pfm<float>(path_out_FLD, output, -1.0f);
-        ResetOut();
-        Cal2(2);
-        pfm_rw.write_pfm<float>(path_out_FLD_r2, output, -1.0f);
-        ResetOut();
-        Cal2(3);
-        pfm_rw.write_pfm<float>(path_out_FLD_r3, output, -1.0f);
+        // ResetOut();
+        // Cal2(2);
+        // pfm_rw.write_pfm<float>(path_out_FLD_r2, output, -1.0f);
+        // ResetOut();
+        // Cal2(3);
+        // pfm_rw.write_pfm<float>(path_out_FLD_r3, output, -1.0f);
         ResetOut();
         JFA();
         pfm_rw.write_pfm<float>(path_out_jfa, output, -1.0f);
@@ -353,7 +353,6 @@ struct Solution {
 
     void JFA() {
         vector<pair<Coordinate, float>> InfoBest;
-        queue<Coordinate> q;
         vector<Coordinate> Seeds;
         int maxSize = max(imgH, imgW);
         InfoBest.resize(maxSize * maxSize);
@@ -363,7 +362,8 @@ struct Solution {
                     Seeds.emplace_back(Coordinate{i, j});
                     InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, 0.0);
                 } else {
-                    InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, numeric_limits<float>::max());
+                    InfoBest[i * imgW + j] =
+                        make_pair(Coordinate{i, j}, numeric_limits<float>::max());
                 }
             }
         }
