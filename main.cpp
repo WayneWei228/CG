@@ -171,16 +171,18 @@ struct CoordinateHash {
 
 struct Solution {
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/singlesharp_in.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/surface_in.pfm";
     string path_out_C1 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m1.pfm";
     string path_out_C2 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2.pfm";
     string path_out_C2_r2 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2_r2.pfm";
     string path_out_C2_r3 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2_r3.pfm";
-    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/Complex/singlesharp_out_jfa.pfm";
+    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/surface_out_jfa.pfm";
     string path_in_win = "C:/CG/singlesharp_in.pfm";
     string path_out_win = "C:/CG/singlesharp_in.pfm";
-    float* input = pfm_rw.read_pfm<float>(path_in_win);
+
+    float* input = pfm_rw.read_pfm<float>(path_in); //
     float* output = NULL;
+
     int imgH = pfm_rw.getHeight();
     int imgW = pfm_rw.getWidth();
     int size = imgH * imgW;
@@ -218,9 +220,9 @@ struct Solution {
     void Solve() {
         // freopen("/Users/wayne_tx/Desktop/CG/ot.txt", "w", stdout);
         // cout << " path in " << path_in << endl;
-        // cout << "Height " << imgH << " Width " << imgW << endl;
+        cout << "Height " << imgH << " Width " << imgW << endl;
         InitialInput();
-        pfm_rw.write_pfm<float>(path_in_win, input, -1.0f);
+        // pfm_rw.write_pfm<float>(path_in, input, -1.0f);
         // ResetOut();
         // Cal1();
         // pfm_rw.write_pfm<float>(path_out_C1, output, -1.0f);
@@ -235,7 +237,7 @@ struct Solution {
         // pfm_rw.write_pfm<float>(path_out_C2_r3, output, -1.0f);
         ResetOut();
         JFA();
-        pfm_rw.write_pfm<float>(path_out_win, output, -1.0f);
+        pfm_rw.write_pfm<float>(path_out_jfa, output, -1.0f);
         // fclose(stdout);
     }
 
@@ -308,7 +310,7 @@ struct Solution {
         return sqrt(pow(a.X - b.X, 2) + pow(a.Y - b.Y, 2)) / norm;
     }
 
-    void OneSeedFlood(Coordinate start, vector<pair<Coordinate, float>>& infobest) {
+    void OneSeedFlood(const Coordinate& start, vector<pair<Coordinate, float>>& infobest) {
         unordered_set<Coordinate, CoordinateHash> q;
         q.emplace(start);
         int maxSize = max(imgH, imgW);
@@ -332,6 +334,7 @@ struct Solution {
             }
             stepLength /= 2;
             swap(q, newQ);
+            newQ.clear();
         }
     }
 
@@ -344,16 +347,20 @@ struct Solution {
         for (int i = 0; i < imgH; i++) {
             for (int j = 0; j < imgW; j++) {
                 if (input[i * imgW + j] == 0) {
-                    InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, 0.0);
                     Seeds.emplace_back(Coordinate{i, j});
+                    InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, 0.0);
                 } else {
                     InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, numeric_limits<float>::max());
                 }
             }
         }
+        printf("%s:%d\n", "Seeds size", int(Seeds.size()));
         for (int i = 0; i < Seeds.size(); i++) {
             OneSeedFlood(Seeds[i], InfoBest);
         }
+        // for (int i = 0; i < 10; i++) {
+        //     OneSeedFlood(Seeds[i], InfoBest);
+        // }
         for (int i = 0; i < imgH; i++) {
             for (int j = 0; j < imgW; j++) {
                 output[i * imgW + j] = InfoBest[i * imgW + j].second;
