@@ -171,12 +171,13 @@ struct CoordinateHash {
 
 struct Solution {
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/surface_in.pfm";
-    string path_out_C1 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m1.pfm";
-    string path_out_C2 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2.pfm";
-    string path_out_C2_r2 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2_r2.pfm";
-    string path_out_C2_r3 = "/Users/wayne_tx/Desktop/CG/onesquare_out_m2_r3.pfm";
-    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/surface_out_jfa.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/JFA/line_in.pfm";
+    string path_out_BF = "/Users/wayne_tx/Desktop/CG/JFA/line_out_BF.pfm";
+    string path_out_FLD = "/Users/wayne_tx/Desktop/CG/JFA/line_out_FLD.pfm";
+    string path_out_FLD_r2 = "/Users/wayne_tx/Desktop/CG/JFA/line_out_FLD_r2.pfm";
+    string path_out_FLD_r3 = "/Users/wayne_tx/Desktop/CG/JFA/line_out_FLD_r3.pfm";
+    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/JFA/line_out_jfa.pfm";
+    string path_out_rec = "/Users/wayne_tx/Desktop/CG/JFA/line_out_rec.pfm";
     string path_in_win = "C:/CG/singlesharp_in.pfm";
     string path_out_win = "C:/CG/singlesharp_in.pfm";
 
@@ -217,27 +218,39 @@ struct Solution {
         }
     }
 
+    void Recover(float*& In) {
+        for (int i = 0; i < imgH; i++) {
+            for (int j = 0; j < imgW; j++) {
+                if (In[i * imgW + j] != 0) {
+                    In[i * imgW + j] = 1;
+                }
+            }
+        }
+    }
+
     void Solve() {
         // freopen("/Users/wayne_tx/Desktop/CG/ot.txt", "w", stdout);
         // cout << " path in " << path_in << endl;
         cout << "Height " << imgH << " Width " << imgW << endl;
         InitialInput();
-        // pfm_rw.write_pfm<float>(path_in, input, -1.0f);
-        // ResetOut();
-        // Cal1();
-        // pfm_rw.write_pfm<float>(path_out_C1, output, -1.0f);
-        // ResetOut();
-        // Cal2(1);
-        // pfm_rw.write_pfm<float>(path_out_C2, output, -1.0f);
-        // ResetOut();
-        // Cal2(2);
-        // pfm_rw.write_pfm<float>(path_out_C2_r2, output, -1.0f);
-        // ResetOut();
-        // Cal2(3);
-        // pfm_rw.write_pfm<float>(path_out_C2_r3, output, -1.0f);
+        pfm_rw.write_pfm<float>(path_in, input, -1.0f);
+        ResetOut();
+        Cal1();
+        pfm_rw.write_pfm<float>(path_out_BF, output, -1.0f);
+        ResetOut();
+        Cal2(1);
+        pfm_rw.write_pfm<float>(path_out_FLD, output, -1.0f);
+        ResetOut();
+        Cal2(2);
+        pfm_rw.write_pfm<float>(path_out_FLD_r2, output, -1.0f);
+        ResetOut();
+        Cal2(3);
+        pfm_rw.write_pfm<float>(path_out_FLD_r3, output, -1.0f);
         ResetOut();
         JFA();
         pfm_rw.write_pfm<float>(path_out_jfa, output, -1.0f);
+        Recover(output);
+        pfm_rw.write_pfm<float>(path_out_rec, output, -1.0f);
         // fclose(stdout);
     }
 
