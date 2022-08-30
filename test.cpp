@@ -3,9 +3,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+
 #include <atomic>
-#define THREADS 4
-#define N 16
+#define THREADS 16
+#define N 10000
 #define CHUNK 100
 using namespace std;
 
@@ -16,17 +17,18 @@ int main() {
     start = clock();
 
     int i;
-#pragma omp parallel for schedule(guided) num_threads(THREADS)
+#pragma omp parallel for schedule(dynamic) num_threads(THREADS)
     for (i = 0; i < N; i++) {
+#pragma omp parallel for schedule(dynamic) num_threads(THREADS)
+        for (int j = 0; j < N; j++) {
+            total++;
+        }
         /* wait for i seconds */
-        sleep(i);
-        total++;
-        printf("Thread %d has completed iteration %d.\n", omp_get_thread_num(), i);
     }
     /* all threads done */
     printf("All done!\n");
     printf("Total %u\n", total.load());
     end = clock();
-    printf("Run Time : %.10lf\n", (double)(end - start) / 1000.0);
+    printf("Run Time : %.10lf\n", (double)(end - start) / CLOCKS_PER_SEC);
     return 0;
 }
