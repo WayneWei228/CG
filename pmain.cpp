@@ -277,7 +277,7 @@ struct Solution {
 #pragma omp parallel
             for (auto it = q.begin(); it != q.end(); it++) {
                 Coordinate c = *it;
-                #pragma omp parallel for schedule(static) num_threads(8)
+#pragma omp parallel for schedule(static) num_threads(8)
                 for (int i = 0; i < 8; i++) {
                     Coordinate newC = {c.X + Next8[i][0] * stepLength,
                                        c.Y + Next8[i][1] * stepLength};
@@ -318,8 +318,9 @@ struct Solution {
         }
         printf("Seeds size : %d\n", int(Seeds.size()));
 
-#pragma omp parallel for schedule(dynamic) num_threads(THREADS)
+#pragma omp parallel for schedule(guided) num_threads(THREADS)
         for (int i = 0; i < Seeds.size(); i++) {
+            printf("Thread %d is doing iteration %d.\n", omp_get_thread_num(), i);
             OneSeedFlood(Seeds[i], InfoBest);
         }
 
