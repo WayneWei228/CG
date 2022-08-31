@@ -177,11 +177,10 @@ struct CoordinateHash {
 struct Solution {
     mutex mx;
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/large_in.pfm";
-    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_pjfa.pfm";
-    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_jfa.pfm";
-    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_BF.pfm";
-    string path_out_rec = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_rec.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_in.pfm";
+    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_pjfa.pfm";
+    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_jfa.pfm";
+    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_BF.pfm";
 
     float* input = pfm_rw.read_pfm<float>(path_in);  //
     float* output = NULL;
@@ -256,14 +255,6 @@ struct Solution {
         time(&end3);
         printf("Run Time : %.10lf sec\n", double(end3 - start3));
         printf("\n");
-
-
-
-
-
-
-
-
         fclose(stdout);
     }
 
@@ -303,14 +294,16 @@ struct Solution {
                 for (int i = 0; i < 8; i++) {
                     Coordinate newC = {c.X + Next8[i][0] * stepLength,
                                        c.Y + Next8[i][1] * stepLength};
-                    newQ.emplace(newC);
                     if (newC.X < 0 || newC.X >= imgH) continue;
                     if (newC.Y < 0 || newC.Y >= imgW) continue;
+                    // mx.lock();
+                    newQ.emplace(newC);
+                    // mx.unlock();
                     float dis = Distance(start, newC);
                     if (dis < infobest[newC.X * imgW + newC.Y]) {
-                        mx.lock();
+                        // mx.lock();
                         infobest[newC.X * imgW + newC.Y] = dis;
-                        mx.unlock();
+                        // mx.unlock();
                     }
                 }
             }
@@ -390,9 +383,9 @@ struct Solution {
                 for (int i = 0; i < 8; i++) {
                     Coordinate newC = {c.X + Next8[i][0] * stepLength,
                                        c.Y + Next8[i][1] * stepLength};
-                    newQ.emplace(newC);
                     if (newC.X < 0 || newC.X >= imgH) continue;
                     if (newC.Y < 0 || newC.Y >= imgW) continue;
+                    newQ.emplace(newC);
                     float dis = Distance(start, newC);
                     if (dis < infobest[newC.X * imgW + newC.Y].second) {
                         infobest[newC.X * imgW + newC.Y].first = newC;
