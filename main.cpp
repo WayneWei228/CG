@@ -1,6 +1,7 @@
 #ifndef _PGM_H_
 #define _PGM_H_
 #include <stdio.h>
+#include <time.h>
 
 #include <algorithm>
 #include <bitset> /*std::bitset<32>*/
@@ -171,13 +172,13 @@ struct CoordinateHash {
 
 struct Solution {
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/JFA/error_in.pfm";
-    string path_out_BF = "/Users/wayne_tx/Desktop/CG/JFA/error_out_BF.pfm";
-    string path_out_FLD = "/Users/wayne_tx/Desktop/CG/JFA/error_out_FLD.pfm";
-    string path_out_FLD_r2 = "/Users/wayne_tx/Desktop/CG/JFA/error_out_FLD_r2.pfm";
-    string path_out_FLD_r3 = "/Users/wayne_tx/Desktop/CG/JFA/error_out_FLD_r3.pfm";
-    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/JFA/error_out_jfa.pfm";
-    string path_out_rec = "/Users/wayne_tx/Desktop/CG/JFA/error_out_rec.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/complex_in.pfm";
+    string path_out_BF = "/Users/wayne_tx/Desktop/CG/complex_out_BF.pfm";
+    // string path_out_FLD = "/Users/wayne_tx/Desktop/CG/complex_out_FLD.pfm";
+    // string path_out_FLD_r2 = "/Users/wayne_tx/Desktop/CG/complex_out_FLD_r2.pfm";
+    // string path_out_FLD_r3 = "/Users/wayne_tx/Desktop/CG/complex_out_FLD_r3.pfm";
+    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/complex_out_jfa_m2.pfm";
+    string path_out_rec = "/Users/wayne_tx/Desktop/CG/complex_out_rec.pfm";
     string path_in_win = "C:/CG/singlesharp_in.pfm";
     string path_out_win = "C:/CG/singlesharp_in.pfm";
 
@@ -231,26 +232,30 @@ struct Solution {
     void Solve() {
         // freopen("/Users/wayne_tx/Desktop/CG/ot.txt", "w", stdout);
         // cout << " path in " << path_in << endl;
-        cout << "Height " << imgH << " Width " << imgW << endl;
+        // cout << "Height " << imgH << " Width " << imgW << endl;
         InitialInput();
         pfm_rw.write_pfm<float>(path_in, input, -1.0f);
-        ResetOut();
-        Cal1();
-        pfm_rw.write_pfm<float>(path_out_BF, output, -1.0f);
-        ResetOut();
-        Cal2(1);
-        pfm_rw.write_pfm<float>(path_out_FLD, output, -1.0f);
+        // ResetOut();
+        // Cal1();
+        // pfm_rw.write_pfm<float>(path_out_BF, output, -1.0f);
+        // ResetOut();
+        // Cal2(1);
+        // pfm_rw.write_pfm<float>(path_out_FLD, output, -1.0f);
         // ResetOut();
         // Cal2(2);
         // pfm_rw.write_pfm<float>(path_out_FLD_r2, output, -1.0f);
         // ResetOut();
         // Cal2(3);
         // pfm_rw.write_pfm<float>(path_out_FLD_r3, output, -1.0f);
+        time_t start1, end1;
         ResetOut();
+        time(&start1);
         JFA();
         pfm_rw.write_pfm<float>(path_out_jfa, output, -1.0f);
-        Recover(output);
-        pfm_rw.write_pfm<float>(path_out_rec, output, -1.0f);
+        time(&end1);
+        printf("Run Time : %.10lf sec\n", double(end1 - start1));
+        // Recover(output);
+        // pfm_rw.write_pfm<float>(path_out_rec, output, -1.0f);
         // fclose(stdout);
     }
 
@@ -367,13 +372,9 @@ struct Solution {
                 }
             }
         }
-        printf("%s:%d\n", "Seeds size", int(Seeds.size()));
         for (int i = 0; i < Seeds.size(); i++) {
             OneSeedFlood(Seeds[i], InfoBest);
         }
-        // for (int i = 0; i < 10; i++) {
-        //     OneSeedFlood(Seeds[i], InfoBest);
-        // }
         for (int i = 0; i < imgH; i++) {
             for (int j = 0; j < imgW; j++) {
                 output[i * imgW + j] = InfoBest[i * imgW + j].second;

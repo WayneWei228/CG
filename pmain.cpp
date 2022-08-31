@@ -21,7 +21,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
-#define THREADS 8
+#define THREADS 16
 using namespace std;
 
 enum PFM_endianness { BIG, LITTLE, ERROR };
@@ -177,10 +177,11 @@ struct CoordinateHash {
 struct Solution {
     mutex mx;
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/Complex/complex_in.pfm";
-    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/Complex/complex_out_pjfa.pfm";
-    string path_out_BF = "/Users/wayne_tx/Desktop/CG/Complex/complex_out_BF.pfm";
-    string path_out_rec = "/Users/wayne_tx/Desktop/CG/Complex/complex_out_rec.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/large_in.pfm";
+    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_pjfa.pfm";
+    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_jfa.pfm";
+    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_BF.pfm";
+    string path_out_rec = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_rec.pfm";
 
     float* input = pfm_rw.read_pfm<float>(path_in);  //
     float* output = NULL;
@@ -230,19 +231,40 @@ struct Solution {
     }
 
     void Solve() {
-        clock_t start1, end1, start2, end2;
+        freopen("/Users/wayne_tx/Desktop/CG/CPJFA/report.txt", "w", stdout);
+        printf("Input: %s\n", path_in.c_str());
+        time_t start1, end1, start2, end2, start3, end3;
+        printf("Method: Brute Force, no parallel\n");
         ResetOut();
-        start1 = clock();
+        time(&start1);
         Cal1();
         pfm_rw.write_pfm<float>(path_out_BF, output, -1.0f);
-        end1 = clock();
-        printf("Run Time : %.10lf\n", (double)(end1 - start1) / CLOCKS_PER_SEC);
+        time(&end1);
+        printf("Run Time : %.10lf sec\n", double(end1 - start1));
+        printf("Method: Parallel JFA through cpu\n");
         ResetOut();
-        start2 = clock();
-        JFA();
+        time(&start2);
+        PJFA();
         pfm_rw.write_pfm<float>(path_out_pjfa, output, -1.0f);
-        end2 = clock();
-        printf("Run Time : %.10lf\n", (double)(end2 - start2) / CLOCKS_PER_SEC);
+        time(&end2);
+        printf("Run Time : %.10lf sec\n", double(end2 - start2));
+        printf("Method: None Parallel JFA through cpu\n");
+        ResetOut();
+        time(&start3);
+        JFA();
+        pfm_rw.write_pfm<float>(path_out_jfa, output, -1.0f);
+        time(&end3);
+        printf("Run Time : %.10lf sec\n", double(end3 - start3));
+        printf("\n");
+
+
+
+
+
+
+
+
+        fclose(stdout);
     }
 
     void Cal1() {
@@ -266,7 +288,7 @@ struct Solution {
         return sqrt(pow(a.X - b.X, 2) + pow(a.Y - b.Y, 2)) / norm;
     }
 
-    void OneSeedFlood(const Coordinate& start, vector<float>& infobest) {
+    void POneSeedFlood(const Coordinate& start, vector<float>& infobest) {
         unordered_set<Coordinate, CoordinateHash> q;
         q.emplace(start);
         int maxSize = max(imgH, imgW);
@@ -298,7 +320,7 @@ struct Solution {
         }
     }
 
-    void JFA() {
+    void PJFA() {
         int Size = imgH * imgW;
         vector<float> InfoBest;
         InfoBest.resize(Size);
@@ -316,12 +338,10 @@ struct Solution {
                 }
             }
         }
-        printf("Seeds size : %d\n", int(Seeds.size()));
 
 #pragma omp parallel for schedule(guided) num_threads(THREADS)
         for (int i = 0; i < Seeds.size(); i++) {
-            printf("Thread %d is doing iteration %d.\n", omp_get_thread_num(), i);
-            OneSeedFlood(Seeds[i], InfoBest);
+            POneSeedFlood(Seeds[i], InfoBest);
         }
 
         for (int i = 0; i < imgH; i++) {
@@ -330,6 +350,60 @@ struct Solution {
             }
         }
         return;
+    }
+
+    void JFA() {
+        vector<pair<Coordinate, float>> InfoBest;
+        vector<Coordinate> Seeds;
+        int maxSize = max(imgH, imgW);
+        InfoBest.resize(maxSize * maxSize);
+        for (int i = 0; i < imgH; i++) {
+            for (int j = 0; j < imgW; j++) {
+                if (input[i * imgW + j] == 0) {
+                    Seeds.emplace_back(Coordinate{i, j});
+                    InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, 0.0);
+                } else {
+                    InfoBest[i * imgW + j] =
+                        make_pair(Coordinate{i, j}, numeric_limits<float>::max());
+                }
+            }
+        }
+        for (int i = 0; i < Seeds.size(); i++) {
+            OneSeedFlood(Seeds[i], InfoBest);
+        }
+        for (int i = 0; i < imgH; i++) {
+            for (int j = 0; j < imgW; j++) {
+                output[i * imgW + j] = InfoBest[i * imgW + j].second;
+            }
+        }
+    }
+
+    void OneSeedFlood(const Coordinate& start, vector<pair<Coordinate, float>>& infobest) {
+        unordered_set<Coordinate, CoordinateHash> q;
+        q.emplace(start);
+        int maxSize = max(imgH, imgW);
+        int stepLength = max(imgH, imgW) / 2;
+        while (stepLength != 0) {
+            unordered_set<Coordinate, CoordinateHash> newQ;
+            newQ.emplace(start);
+            for (const auto& c : q) {
+                for (int i = 0; i < 8; i++) {
+                    Coordinate newC = {c.X + Next8[i][0] * stepLength,
+                                       c.Y + Next8[i][1] * stepLength};
+                    newQ.emplace(newC);
+                    if (newC.X < 0 || newC.X >= imgH) continue;
+                    if (newC.Y < 0 || newC.Y >= imgW) continue;
+                    float dis = Distance(start, newC);
+                    if (dis < infobest[newC.X * imgW + newC.Y].second) {
+                        infobest[newC.X * imgW + newC.Y].first = newC;
+                        infobest[newC.X * imgW + newC.Y].second = dis;
+                    }
+                }
+            }
+            stepLength /= 2;
+            swap(q, newQ);
+            newQ.clear();
+        }
     }
 };
 
