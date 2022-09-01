@@ -285,8 +285,7 @@ struct Solution {
         int maxSize = max(imgH, imgW);
         int stepLength = max(imgH, imgW) / 2;
         while (stepLength != 0) {
-            unordered_set<Coordinate, CoordinateHash> newQ;
-            newQ.emplace(start);
+            unordered_set<Coordinate, CoordinateHash> newQ(q);
 #pragma omp parallel
             for (auto it = q.begin(); it != q.end(); it++) {
                 Coordinate c = *it;
@@ -377,8 +376,7 @@ struct Solution {
         int maxSize = max(imgH, imgW);
         int stepLength = max(imgH, imgW) / 2;
         while (stepLength != 0) {
-            unordered_set<Coordinate, CoordinateHash> newQ;
-            newQ.emplace(start);
+            unordered_set<Coordinate, CoordinateHash> newQ(q);
             for (const auto& c : q) {
                 for (int i = 0; i < 8; i++) {
                     Coordinate newC = {c.X + Next8[i][0] * stepLength,
