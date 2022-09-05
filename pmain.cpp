@@ -177,10 +177,10 @@ struct CoordinateHash {
 struct Solution {
     mutex mx;
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_in.pfm";
-    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_pjfa.pfm";
-    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_jfa.pfm";
-    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_BF.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/large_in.pfm";
+    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_pjfa.pfm";
+    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_jfa.pfm";
+    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_BF.pfm";
 
     float* input = pfm_rw.read_pfm<float>(path_in);  //
     float* output = NULL;
@@ -233,6 +233,7 @@ struct Solution {
         freopen("/Users/wayne_tx/Desktop/CG/CPJFA/report.txt", "w", stdout);
         printf("Input: %s\n", path_in.c_str());
         time_t start1, end1, start2, end2, start3, end3;
+
         printf("Method: Brute Force, no parallel\n");
         ResetOut();
         time(&start1);
@@ -240,6 +241,7 @@ struct Solution {
         pfm_rw.write_pfm<float>(path_out_BF, output, -1.0f);
         time(&end1);
         printf("Run Time : %.10lf sec\n", double(end1 - start1));
+
         printf("Method: Parallel JFA through cpu\n");
         ResetOut();
         time(&start2);
@@ -247,6 +249,7 @@ struct Solution {
         pfm_rw.write_pfm<float>(path_out_pjfa, output, -1.0f);
         time(&end2);
         printf("Run Time : %.10lf sec\n", double(end2 - start2));
+
         printf("Method: None Parallel JFA through cpu\n");
         ResetOut();
         time(&start3);
@@ -255,6 +258,7 @@ struct Solution {
         time(&end3);
         printf("Run Time : %.10lf sec\n", double(end3 - start3));
         printf("\n");
+
         fclose(stdout);
     }
 
@@ -275,14 +279,26 @@ struct Solution {
         }
     }
 
-    float Distance(Coordinate a, Coordinate b) {
+    float Distance(const Coordinate& a, const Coordinate& b) {
         return sqrt(pow(a.X - b.X, 2) + pow(a.Y - b.Y, 2)) / norm;
     }
 
-    void POneSeedFlood(const Coordinate& start, vector<float>& infobest) {
+    void PJFA() {
+        vector<pair<Coordinate, float>> InfoBest;
+        InfoBest.resize(imgH * imgW);
         unordered_set<Coordinate, CoordinateHash> q;
-        q.emplace(start);
-        int maxSize = max(imgH, imgW);
+        for (int i = 0; i < imgH; i++) {
+            for (int j = 0; j < imgW; j++) {
+                if (input[i * imgW + j] == 0) {
+                    q.emplace(Coordinate{i, j});
+                    InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, 0.0);
+                } else {
+                    InfoBest[i * imgW + j] =
+                        make_pair(Coordinate{i, j}, numeric_limits<float>::max());
+                }
+            }
+        }
+
         int stepLength = max(imgH, imgW) / 2;
         while (stepLength != 0) {
             unordered_set<Coordinate, CoordinateHash> newQ(q);
@@ -295,14 +311,13 @@ struct Solution {
                                        c.Y + Next8[i][1] * stepLength};
                     if (newC.X < 0 || newC.X >= imgH) continue;
                     if (newC.Y < 0 || newC.Y >= imgW) continue;
-                    // mx.lock();
+                    mx.lock();
                     newQ.emplace(newC);
-                    // mx.unlock();
-                    float dis = Distance(start, newC);
-                    if (dis < infobest[newC.X * imgW + newC.Y]) {
-                        // mx.lock();
-                        infobest[newC.X * imgW + newC.Y] = dis;
-                        // mx.unlock();
+                    mx.unlock();
+                    float dis = Distance(InfoBest[c.X * imgW + c.Y].first, newC);
+                    if (dis < InfoBest[newC.X * imgW + newC.Y].second) {
+                        InfoBest[newC.X * imgW + newC.Y].first = InfoBest[c.X * imgW + c.Y].first;
+                        InfoBest[newC.X * imgW + newC.Y].second = dis;
                     }
                 }
             }
@@ -310,49 +325,24 @@ struct Solution {
             swap(q, newQ);
             newQ.clear();
         }
-    }
-
-    void PJFA() {
-        int Size = imgH * imgW;
-        vector<float> InfoBest;
-        InfoBest.resize(Size);
-        vector<Coordinate> Seeds;
-        int maxSize = max(imgH, imgW);
-        InfoBest.resize(maxSize * maxSize);
 
         for (int i = 0; i < imgH; i++) {
             for (int j = 0; j < imgW; j++) {
-                if (input[i * imgW + j] == 0) {
-                    Seeds.emplace_back(Coordinate{i, j});
-                    InfoBest[i * imgW + j] = 0.0;
-                } else {
-                    InfoBest[i * imgW + j] = numeric_limits<float>::max();
-                }
-            }
-        }
-
-#pragma omp parallel for schedule(guided) num_threads(THREADS)
-        for (int i = 0; i < Seeds.size(); i++) {
-            POneSeedFlood(Seeds[i], InfoBest);
-        }
-
-        for (int i = 0; i < imgH; i++) {
-            for (int j = 0; j < imgW; j++) {
-                output[i * imgW + j] = InfoBest[i * imgW + j];
+                output[i * imgW + j] = InfoBest[i * imgW + j].second;
             }
         }
         return;
     }
 
     void JFA() {
-        vector<pair<Coordinate, float>> InfoBest;
-        vector<Coordinate> Seeds;
         int maxSize = max(imgH, imgW);
-        InfoBest.resize(maxSize * maxSize);
+        vector<pair<Coordinate, float>> InfoBest;
+        InfoBest.resize(imgH * imgW);
+        unordered_set<Coordinate, CoordinateHash> q;
         for (int i = 0; i < imgH; i++) {
             for (int j = 0; j < imgW; j++) {
                 if (input[i * imgW + j] == 0) {
-                    Seeds.emplace_back(Coordinate{i, j});
+                    q.emplace(Coordinate{i, j});
                     InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, 0.0);
                 } else {
                     InfoBest[i * imgW + j] =
@@ -360,20 +350,7 @@ struct Solution {
                 }
             }
         }
-        for (int i = 0; i < Seeds.size(); i++) {
-            OneSeedFlood(Seeds[i], InfoBest);
-        }
-        for (int i = 0; i < imgH; i++) {
-            for (int j = 0; j < imgW; j++) {
-                output[i * imgW + j] = InfoBest[i * imgW + j].second;
-            }
-        }
-    }
 
-    void OneSeedFlood(const Coordinate& start, vector<pair<Coordinate, float>>& infobest) {
-        unordered_set<Coordinate, CoordinateHash> q;
-        q.emplace(start);
-        int maxSize = max(imgH, imgW);
         int stepLength = max(imgH, imgW) / 2;
         while (stepLength != 0) {
             unordered_set<Coordinate, CoordinateHash> newQ(q);
@@ -384,16 +361,22 @@ struct Solution {
                     if (newC.X < 0 || newC.X >= imgH) continue;
                     if (newC.Y < 0 || newC.Y >= imgW) continue;
                     newQ.emplace(newC);
-                    float dis = Distance(start, newC);
-                    if (dis < infobest[newC.X * imgW + newC.Y].second) {
-                        infobest[newC.X * imgW + newC.Y].first = newC;
-                        infobest[newC.X * imgW + newC.Y].second = dis;
+                    float dis = Distance(InfoBest[c.X * imgW + c.Y].first, newC);
+                    if (dis < InfoBest[newC.X * imgW + newC.Y].second) {
+                        InfoBest[newC.X * imgW + newC.Y].first = InfoBest[c.X * imgW + c.Y].first;
+                        InfoBest[newC.X * imgW + newC.Y].second = dis;
                     }
                 }
             }
             stepLength /= 2;
             swap(q, newQ);
             newQ.clear();
+        }
+
+        for (int i = 0; i < imgH; i++) {
+            for (int j = 0; j < imgW; j++) {
+                output[i * imgW + j] = InfoBest[i * imgW + j].second;
+            }
         }
     }
 };

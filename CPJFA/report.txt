@@ -1,11 +1,10 @@
-
 Input: /Users/wayne_tx/Desktop/CG/CPJFA/complex_in.pfm
 Method: Brute Force, no parallel
 Run Time : 1.0000000000 sec
 Method: Parallel JFA through cpu
 Run Time : 1.0000000000 sec
 Method: None Parallel JFA through cpu
-Run Time : 5.0000000000 sec
+Run Time : 0.0000000000 sec
 
 Input: /Users/wayne_tx/Desktop/CG/CPJFA/error_in.pfm
 Method: Brute Force, no parallel
@@ -19,7 +18,8 @@ Input: /Users/wayne_tx/Desktop/CG/CPJFA/large_in.pfm
 Method: Brute Force, no parallel
 Run Time : 9.0000000000 sec
 Method: Parallel JFA through cpu
-Run Time : 6.0000000000 sec
+Run Time : 4.0000000000 sec
 Method: None Parallel JFA through cpu
-Run Time : 27.0000000000 sec
+Run Time : 0.0000000000 sec
+
 
