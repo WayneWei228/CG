@@ -302,7 +302,7 @@ struct Solution {
         int stepLength = max(imgH, imgW) / 2;
         while (stepLength != 0) {
             unordered_set<Coordinate, CoordinateHash> newQ(q);
-#pragma omp parallel
+// #pragma omp parallel
             for (auto it = q.begin(); it != q.end(); it++) {
                 Coordinate c = *it;
 #pragma omp parallel for schedule(static) num_threads(8)

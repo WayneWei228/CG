@@ -4,43 +4,33 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <vector>
 #include <atomic>
+#include <chrono>
+#include <iostream>
 #include <mutex>
+#include <vector>
 #define THREADS 16
 #define N 1000
 #define CHUNK 100
 using namespace std;
-
-atomic_int total(0);
-
-struct Coordinate {
-    int X, Y;
-
-    bool operator==(const Coordinate& that) const { return X == that.X && Y == that.Y; }
-};
-
-struct CoordinateHash {
-    size_t operator()(const Coordinate& that) const { return that.X * size_t(9875321) + that.Y; }
-};
-
+using namespace std::chrono;
+const int M = 1000000;
 
 int main() {
-    clock_t start, end;
-    start = clock();
-    vector<int> a;
-    int i;
-    mutex mx;
-#pragma omp parallel for schedule(dynamic) num_threads(THREADS)
-    for (i = 0; i < N; i++) {
-        mx.lock();
-        a.emplace_back(i);
-        mx.unlock();
+    vector<int> A;
+    A.resize(M);
+    for (int num = 1; num <= 16; num++) {
+        auto start = high_resolution_clock::now();
+#pragma omp parallel for schedule(static) num_threads(num)
+        for (int i = 0; i < A.size(); i++) {
+            A[i] = i * 2 - 1;
+        }
+
+        auto stop = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(stop - start);
+        cout << "Number of threads : " << num << endl;
+        cout << "Time taken by function: " << duration.count() << " microseconds" << endl;
+        cout << endl;
     }
-    printf("%d\n", int(a.size()));
-    /* all threads done */
-    printf("All done!\n");
-    printf("Total %u\n", total.load());
-    end = clock();
     return 0;
 }
