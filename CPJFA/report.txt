@@ -1,0 +1,8 @@
+Input: /Users/wayne_tx/Desktop/CG/CPJFA/complex_in.pfm
+Method: Brute Force, no parallel
+Run Time : 369318 microseconds
+Method: Parallel JFA through cpu
+Run Time : 1776556 microseconds
+Method: None Parallel JFA through cpu
+Run Time : 12268 microseconds
+

@@ -5,8 +5,10 @@
 #include <time.h>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <bitset> /*std::bitset<32>*/
+#include <chrono>
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
@@ -23,6 +25,7 @@
 #include <vector>
 #define THREADS 16
 using namespace std;
+using namespace std::chrono;
 
 enum PFM_endianness { BIG, LITTLE, ERROR };
 
@@ -175,18 +178,17 @@ struct CoordinateHash {
 };
 
 struct Solution {
-    mutex mx;
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/large_in.pfm";
-    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_pjfa.pfm";
-    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_jfa.pfm";
-    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_BF.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_in.pfm";
+    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_pjfa.pfm";
+    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_jfa.pfm";
+    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_BF.pfm";
 
     float* input = pfm_rw.read_pfm<float>(path_in);  //
     float* output = NULL;
 
-    int imgH = pfm_rw.getHeight();
-    int imgW = pfm_rw.getWidth();
+    const int imgH = pfm_rw.getHeight();
+    const int imgW = pfm_rw.getWidth();
     int size = imgH * imgW;
     float norm = sqrt(pow(imgH, 2) + pow(imgW, 2));
 
@@ -232,31 +234,33 @@ struct Solution {
     void Solve() {
         freopen("/Users/wayne_tx/Desktop/CG/CPJFA/report.txt", "w", stdout);
         printf("Input: %s\n", path_in.c_str());
-        time_t start1, end1, start2, end2, start3, end3;
 
         printf("Method: Brute Force, no parallel\n");
         ResetOut();
-        time(&start1);
+        auto start1 = high_resolution_clock::now();
         Cal1();
         pfm_rw.write_pfm<float>(path_out_BF, output, -1.0f);
-        time(&end1);
-        printf("Run Time : %.10lf sec\n", double(end1 - start1));
+        auto end1 = high_resolution_clock::now();
+        auto ans1 = duration_cast<microseconds>(end1 - start1);
+        printf("Run Time : %d microseconds\n", ans1);
 
         printf("Method: Parallel JFA through cpu\n");
         ResetOut();
-        time(&start2);
+        auto start2 = high_resolution_clock::now();
         PJFA();
         pfm_rw.write_pfm<float>(path_out_pjfa, output, -1.0f);
-        time(&end2);
-        printf("Run Time : %.10lf sec\n", double(end2 - start2));
+        auto end2 = high_resolution_clock::now();
+        auto ans2 = duration_cast<microseconds>(end2 - start2);
+        printf("Run Time : %d microseconds\n", ans2);
 
         printf("Method: None Parallel JFA through cpu\n");
         ResetOut();
-        time(&start3);
+        auto start3 = high_resolution_clock::now();
         JFA();
         pfm_rw.write_pfm<float>(path_out_jfa, output, -1.0f);
-        time(&end3);
-        printf("Run Time : %.10lf sec\n", double(end3 - start3));
+        auto end3 = high_resolution_clock::now();
+        auto ans3 = duration_cast<microseconds>(end3 - start3);
+        printf("Run Time : %d microseconds\n", ans3);
         printf("\n");
 
         fclose(stdout);
@@ -286,11 +290,14 @@ struct Solution {
     void PJFA() {
         vector<pair<Coordinate, float>> InfoBest;
         InfoBest.resize(imgH * imgW);
-        unordered_set<Coordinate, CoordinateHash> q;
+        bool q[imgH * imgW];
+        for (int i = 0; i < imgH * imgW; i++) {
+            q[i] = false;
+        }
         for (int i = 0; i < imgH; i++) {
             for (int j = 0; j < imgW; j++) {
                 if (input[i * imgW + j] == 0) {
-                    q.emplace(Coordinate{i, j});
+                    q[i * imgW + j] = true;
                     InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, 0.0);
                 } else {
                     InfoBest[i * imgW + j] =
@@ -301,29 +308,38 @@ struct Solution {
 
         int stepLength = max(imgH, imgW) / 2;
         while (stepLength != 0) {
-            unordered_set<Coordinate, CoordinateHash> newQ(q);
-// #pragma omp parallel
-            for (auto it = q.begin(); it != q.end(); it++) {
-                Coordinate c = *it;
+            bool newq[imgH * imgW];
+            for (int i = 0; i < imgH * imgW; i++) {
+                newq[i] = false;
+            }
+#pragma omp parallel for schedule(static) num_threads(16)
+            for (int x = 0; x < imgH; x++) {
+#pragma omp parallel for schedule(static) num_threads(16)
+                for (int y = 0; y < imgW; y++) {
+                    if (q[x * imgW + y]) {
+                        newq[x * imgW + y] = true;
 #pragma omp parallel for schedule(static) num_threads(8)
-                for (int i = 0; i < 8; i++) {
-                    Coordinate newC = {c.X + Next8[i][0] * stepLength,
-                                       c.Y + Next8[i][1] * stepLength};
-                    if (newC.X < 0 || newC.X >= imgH) continue;
-                    if (newC.Y < 0 || newC.Y >= imgW) continue;
-                    mx.lock();
-                    newQ.emplace(newC);
-                    mx.unlock();
-                    float dis = Distance(InfoBest[c.X * imgW + c.Y].first, newC);
-                    if (dis < InfoBest[newC.X * imgW + newC.Y].second) {
-                        InfoBest[newC.X * imgW + newC.Y].first = InfoBest[c.X * imgW + c.Y].first;
-                        InfoBest[newC.X * imgW + newC.Y].second = dis;
+                        for (int i = 0; i < 8; i++) {
+                            Coordinate newC = {x + Next8[i][0] * stepLength,
+                                               y + Next8[i][1] * stepLength};
+                            if (newC.X < 0 || newC.X >= imgH) continue;
+                            if (newC.Y < 0 || newC.Y >= imgW) continue;
+#pragma omp atomic write
+                            newq[newC.X * imgW + newC.Y] = true;
+                            float dis = Distance(InfoBest[x * imgW + y].first, newC);
+                            if (dis < InfoBest[newC.X * imgW + newC.Y].second) {
+                                InfoBest[newC.X * imgW + newC.Y].first =
+                                    InfoBest[x * imgW + y].first;
+                                InfoBest[newC.X * imgW + newC.Y].second = dis;
+                            }
+                        }
                     }
                 }
             }
             stepLength /= 2;
-            swap(q, newQ);
-            newQ.clear();
+            for (int i = 0; i < imgH * imgW; i++) {
+                q[i] = newq[i];
+            }
         }
 
         for (int i = 0; i < imgH; i++) {
@@ -331,18 +347,19 @@ struct Solution {
                 output[i * imgW + j] = InfoBest[i * imgW + j].second;
             }
         }
-        return;
     }
 
     void JFA() {
-        int maxSize = max(imgH, imgW);
         vector<pair<Coordinate, float>> InfoBest;
         InfoBest.resize(imgH * imgW);
-        unordered_set<Coordinate, CoordinateHash> q;
+        bool q[imgH * imgW];
+        for (int i = 0; i < imgH * imgW; i++) {
+            q[i] = false;
+        }
         for (int i = 0; i < imgH; i++) {
             for (int j = 0; j < imgW; j++) {
                 if (input[i * imgW + j] == 0) {
-                    q.emplace(Coordinate{i, j});
+                    q[i * imgW + j] = true;
                     InfoBest[i * imgW + j] = make_pair(Coordinate{i, j}, 0.0);
                 } else {
                     InfoBest[i * imgW + j] =
@@ -353,24 +370,34 @@ struct Solution {
 
         int stepLength = max(imgH, imgW) / 2;
         while (stepLength != 0) {
-            unordered_set<Coordinate, CoordinateHash> newQ(q);
-            for (const auto& c : q) {
-                for (int i = 0; i < 8; i++) {
-                    Coordinate newC = {c.X + Next8[i][0] * stepLength,
-                                       c.Y + Next8[i][1] * stepLength};
-                    if (newC.X < 0 || newC.X >= imgH) continue;
-                    if (newC.Y < 0 || newC.Y >= imgW) continue;
-                    newQ.emplace(newC);
-                    float dis = Distance(InfoBest[c.X * imgW + c.Y].first, newC);
-                    if (dis < InfoBest[newC.X * imgW + newC.Y].second) {
-                        InfoBest[newC.X * imgW + newC.Y].first = InfoBest[c.X * imgW + c.Y].first;
-                        InfoBest[newC.X * imgW + newC.Y].second = dis;
+            bool newq[imgH * imgW];
+            for (int i = 0; i < imgH * imgW; i++) {
+                newq[i] = false;
+            }
+            for (int x = 0; x < imgH; x++) {
+                for (int y = 0; y < imgW; y++) {
+                    if (q[x * imgW + y]) {
+                        newq[x * imgW + y] = true;
+                        for (int i = 0; i < 8; i++) {
+                            Coordinate newC = {x + Next8[i][0] * stepLength,
+                                               y + Next8[i][1] * stepLength};
+                            if (newC.X < 0 || newC.X >= imgH) continue;
+                            if (newC.Y < 0 || newC.Y >= imgW) continue;
+                            newq[newC.X * imgW + newC.Y] = true;
+                            float dis = Distance(InfoBest[x * imgW + y].first, newC);
+                            if (dis < InfoBest[newC.X * imgW + newC.Y].second) {
+                                InfoBest[newC.X * imgW + newC.Y].first =
+                                    InfoBest[x * imgW + y].first;
+                                InfoBest[newC.X * imgW + newC.Y].second = dis;
+                            }
+                        }
                     }
                 }
             }
             stepLength /= 2;
-            swap(q, newQ);
-            newQ.clear();
+            for (int i = 0; i < imgH * imgW; i++) {
+                q[i] = newq[i];
+            }
         }
 
         for (int i = 0; i < imgH; i++) {
