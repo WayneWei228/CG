@@ -177,12 +177,17 @@ struct CoordinateHash {
     size_t operator()(const Coordinate& that) const { return that.X * size_t(9875321) + that.Y; }
 };
 
+/*
+complex 64 64 8
+
+*/
+
 struct Solution {
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_in.pfm";
-    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_pjfa.pfm";
-    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_jfa.pfm";
-    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/complex_out_BF.pfm";
+    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/large_in.pfm";
+    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_pjfa.pfm";
+    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_jfa.pfm";
+    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_BF.pfm";
 
     float* input = pfm_rw.read_pfm<float>(path_in);  //
     float* output = NULL;
@@ -312,13 +317,13 @@ struct Solution {
             for (int i = 0; i < imgH * imgW; i++) {
                 newq[i] = false;
             }
-#pragma omp parallel for schedule(static) num_threads(16)
+#pragma omp parallel for schedule(guided) num_threads(16)
             for (int x = 0; x < imgH; x++) {
-#pragma omp parallel for schedule(static) num_threads(16)
+#pragma omp parallel for schedule(guided) num_threads(16)
                 for (int y = 0; y < imgW; y++) {
                     if (q[x * imgW + y]) {
                         newq[x * imgW + y] = true;
-#pragma omp parallel for schedule(static) num_threads(8)
+#pragma omp parallel for schedule(guided) num_threads(8)
                         for (int i = 0; i < 8; i++) {
                             Coordinate newC = {x + Next8[i][0] * stepLength,
                                                y + Next8[i][1] * stepLength};
