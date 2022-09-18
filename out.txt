@@ -1,48 +1,48 @@
-Number of threads : 1
-Time taken by function: 2503 microseconds
+Number of Threads : 1
+Run Time : 4826 microseconds
 
-Number of threads : 2
-Time taken by function: 1310 microseconds
+Number of Threads : 2
+Run Time : 1721 microseconds
 
-Number of threads : 3
-Time taken by function: 1420 microseconds
+Number of Threads : 3
+Run Time : 2006 microseconds
 
-Number of threads : 4
-Time taken by function: 1220 microseconds
+Number of Threads : 4
+Run Time : 1268 microseconds
 
-Number of threads : 5
-Time taken by function: 846 microseconds
+Number of Threads : 5
+Run Time : 1437 microseconds
 
-Number of threads : 6
-Time taken by function: 902 microseconds
+Number of Threads : 6
+Run Time : 1637 microseconds
 
-Number of threads : 7
-Time taken by function: 868 microseconds
+Number of Threads : 7
+Run Time : 1888 microseconds
 
-Number of threads : 8
-Time taken by function: 866 microseconds
+Number of Threads : 8
+Run Time : 2014 microseconds
 
-Number of threads : 9
-Time taken by function: 775 microseconds
+Number of Threads : 9
+Run Time : 2830 microseconds
 
-Number of threads : 10
-Time taken by function: 1302 microseconds
+Number of Threads : 10
+Run Time : 2078 microseconds
 
-Number of threads : 11
-Time taken by function: 1068 microseconds
+Number of Threads : 11
+Run Time : 780 microseconds
 
-Number of threads : 12
-Time taken by function: 1588 microseconds
+Number of Threads : 12
+Run Time : 1777 microseconds
 
-Number of threads : 13
-Time taken by function: 1661 microseconds
+Number of Threads : 13
+Run Time : 1790 microseconds
 
-Number of threads : 14
-Time taken by function: 1504 microseconds
+Number of Threads : 14
+Run Time : 3015 microseconds
 
-Number of threads : 15
-Time taken by function: 1518 microseconds
+Number of Threads : 15
+Run Time : 3307 microseconds
 
-Number of threads : 16
-Time taken by function: 1544 microseconds
+Number of Threads : 16
+Run Time : 1056 microseconds
 

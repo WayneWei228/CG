@@ -2,47 +2,33 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h>
 
 #include <atomic>
 #include <chrono>
 #include <iostream>
-#include <mutex>
 #include <vector>
 #define THREADS 16
 #define N 1000
-#define CHUNK 100
 using namespace std;
 using namespace std::chrono;
 const int M = 1000000;
 
+int a[M];
+
 int main() {
-    bool* a = new bool[10];
-    for (int i = 0; i < 10; i++) {
-        a[i] = true;
+    int c;
+    freopen("/Users/wayne_tx/Desktop/CG/out.txt", "w", stdout);
+    for (c = 1; c <= 16; c++) {
+        auto start1 = high_resolution_clock::now();
+#pragma omp parallel for schedule(static) num_threads(c)
+        for (int i = 0; i < M; i++) {
+            a[i] = (8 * (i + 1) / 19 + 8) / c;
+        }
+        auto end1 = high_resolution_clock::now();
+        auto ans1 = duration_cast<microseconds>(end1 - start1);
+        printf("Number of Threads : %d\n", c);
+        printf("Run Time : %d microseconds\n\n", ans1);
     }
-    bool* b = new bool[10];
-    for (int i = 0; i < 10; i++) {
-        b[i] = a[i];
-    }
-
-    cout << " a : " << a << endl;
-    cout << " b : " << b << endl;
-
-    a[0] = false; // 
-    swap(a, b);
-    cout << " a : " << a << endl;
-    cout << " b : " << b << endl;
-
-    for (int i = 0; i < 10; i++) {
-        cout << a[i] << " ";
-    }
-    cout << endl;
-    for (int i = 0; i < 10; i++) {
-        cout << b[i] << " ";
-    }
-    cout << endl;
-
-    
+    fclose(stdout);
     return 0;
 }
