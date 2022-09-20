@@ -184,14 +184,14 @@ complex 64 64 8
 
 struct Solution {
     PFM pfm_rw;
-    string path_in = "/Users/wayne_tx/Desktop/CG/CPJFA/large_in.pfm";
-    string path_out_pjfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_pjfa.pfm";
-    string path_out_jfa = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_jfa.pfm";
-    string path_out_BF = "/Users/wayne_tx/Desktop/CG/CPJFA/large_out_BF.pfm";
+    string path_in = "/home/tianxiangw/Desktop/CG/CPJFA";
+    string path_out_pjfa = "/home/tianxiangw/Desktop/CG/CPJFA/large_out_pjfa.pfm";
+    string path_out_jfa = "/home/tianxiangw/Desktop/CG/CPJFA/large_out_jfa.pfm";
+    string path_out_BF = "/home/tianxiangw/Desktop/CG/CPJFA/large_out_BF.pfm";
 
     float* input = pfm_rw.read_pfm<float>(path_in);  //
     float* output = NULL;
-
+    
     const int imgH = pfm_rw.getHeight();
     const int imgW = pfm_rw.getWidth();
     int size = imgH * imgW;
@@ -237,7 +237,7 @@ struct Solution {
     }
 
     void Solve() {
-        freopen("/Users/wayne_tx/Desktop/CG/CPJFA/report.txt", "w", stdout);
+        freopen("/home/tianxiangw/Desktop/CG/CPJFA/report.txt", "w", stdout);
         printf("Input: %s\n", path_in.c_str());
 
         printf("Method: Brute Force, no parallel\n");
