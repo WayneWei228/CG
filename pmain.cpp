@@ -1,6 +1,6 @@
 #ifndef _PGM_H_
 #define _PGM_H_
-#include <omp.h>
+
 #include <stdio.h>
 #include <time.h>
 
