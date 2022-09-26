@@ -1,1 +1,62 @@
-Number of Threads : 2998]nRun Time : 2998 microseconds
+Input: /home/tianxiangw/Desktop/CG/CPJFA/complex_in.pfm
+Method: Brute Force, no parallel
+Run Time : 364168 microseconds
+
+Method: Parallel JFA through cpu, Number of Threads : 1 
+Run Time : 11317 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 2 
+Run Time : 6394 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 3 
+Run Time : 5549 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 4 
+Run Time : 3714 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 5 
+Run Time : 2977 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 6 
+Run Time : 2491 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 7 
+Run Time : 2283 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 8 
+Run Time : 2130 microseconds
+
+Method: None Parallel JFA through cpu
+Run Time : 11891 microseconds
+
+----------------------------------------------------------------
+
+Input: /home/tianxiangw/Desktop/CG/CPJFA/large_in.pfm
+Method: Brute Force, no parallel
+Run Time : 6192438 microseconds
+
+Method: Parallel JFA through cpu, Number of Threads : 1 
+Run Time : 58515 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 2 
+Run Time : 31850 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 3 
+Run Time : 22551 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 4 
+Run Time : 18259 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 5 
+Run Time : 15049 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 6 
+Run Time : 13594 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 7 
+Run Time : 12274 microseconds
+Method: Parallel JFA through cpu, Number of Threads : 8 
+Run Time : 10871 microseconds
+
+Method: None Parallel JFA through cpu
+Run Time : 59357 microseconds
+
+
+
+
+
+
+
+
+
+
+
+
+

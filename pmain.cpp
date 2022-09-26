@@ -184,14 +184,14 @@ complex 64 64 8
 
 struct Solution {
     PFM pfm_rw;
-    string path_in = "/home/tianxiangw/Desktop/CG/CPJFA";
+    string path_in = "/home/tianxiangw/Desktop/CG/CPJFA/large_in.pfm";
     string path_out_pjfa = "/home/tianxiangw/Desktop/CG/CPJFA/large_out_pjfa.pfm";
     string path_out_jfa = "/home/tianxiangw/Desktop/CG/CPJFA/large_out_jfa.pfm";
     string path_out_BF = "/home/tianxiangw/Desktop/CG/CPJFA/large_out_BF.pfm";
 
     float* input = pfm_rw.read_pfm<float>(path_in);  //
     float* output = NULL;
-    
+
     const int imgH = pfm_rw.getHeight();
     const int imgW = pfm_rw.getWidth();
     int size = imgH * imgW;
@@ -242,29 +242,31 @@ struct Solution {
 
         printf("Method: Brute Force, no parallel\n");
         ResetOut();
-        auto start1 = high_resolution_clock::now();
+        auto start1 = steady_clock::now();
         Cal1();
+        auto end1 = steady_clock::now();
         pfm_rw.write_pfm<float>(path_out_BF, output, -1.0f);
-        auto end1 = high_resolution_clock::now();
-        auto ans1 = duration_cast<microseconds>(end1 - start1);
-        printf("Run Time : %d microseconds\n", ans1);
+        auto ans1 = duration_cast<microseconds>(end1 - start1).count();
+        printf("Run Time : %d microseconds\n\n", ans1);
 
-        printf("Method: Parallel JFA through cpu\n");
-        ResetOut();
-        auto start2 = high_resolution_clock::now();
-        PJFA();
-        pfm_rw.write_pfm<float>(path_out_pjfa, output, -1.0f);
-        auto end2 = high_resolution_clock::now();
-        auto ans2 = duration_cast<microseconds>(end2 - start2);
-        printf("Run Time : %d microseconds\n", ans2);
+        for (int i = 1; i <= 8; i++) {
+            printf("Method: Parallel JFA through cpu, Number of Threads : %d \n", i);
+            ResetOut();
+            auto start2 = steady_clock::now();
+            PJFA(i);
+            auto end2 = steady_clock::now();
+            pfm_rw.write_pfm<float>(path_out_pjfa, output, -1.0f);
+            auto ans2 = duration_cast<microseconds>(end2 - start2).count();
+            printf("Run Time : %d microseconds\n", ans2);
+        }
 
-        printf("Method: None Parallel JFA through cpu\n");
+        printf("\nMethod: None Parallel JFA through cpu\n");
         ResetOut();
-        auto start3 = high_resolution_clock::now();
+        auto start3 = steady_clock::now();
         JFA();
+        auto end3 = steady_clock::now();
         pfm_rw.write_pfm<float>(path_out_jfa, output, -1.0f);
-        auto end3 = high_resolution_clock::now();
-        auto ans3 = duration_cast<microseconds>(end3 - start3);
+        auto ans3 = duration_cast<microseconds>(end3 - start3).count();
         printf("Run Time : %d microseconds\n", ans3);
         printf("\n");
 
@@ -292,7 +294,7 @@ struct Solution {
         return sqrt(pow(a.X - b.X, 2) + pow(a.Y - b.Y, 2)) / norm;
     }
 
-    void PJFA() {
+    void PJFA(int threads) {
         vector<pair<Coordinate, float>> InfoBest;
         InfoBest.resize(imgH * imgW);
         bool q[imgH * imgW];
@@ -317,19 +319,19 @@ struct Solution {
             for (int i = 0; i < imgH * imgW; i++) {
                 newq[i] = false;
             }
-#pragma omp parallel for schedule(guided) num_threads(16)
+#pragma omp parallel for schedule(dynamic) num_threads(threads)
             for (int x = 0; x < imgH; x++) {
-#pragma omp parallel for schedule(guided) num_threads(16)
+                // #pragma omp parallel for schedule(static) num_threads(1)
                 for (int y = 0; y < imgW; y++) {
                     if (q[x * imgW + y]) {
                         newq[x * imgW + y] = true;
-#pragma omp parallel for schedule(guided) num_threads(8)
+                        // #pragma omp parallel for schedule(static) num_threads(8)
                         for (int i = 0; i < 8; i++) {
                             Coordinate newC = {x + Next8[i][0] * stepLength,
                                                y + Next8[i][1] * stepLength};
                             if (newC.X < 0 || newC.X >= imgH) continue;
                             if (newC.Y < 0 || newC.Y >= imgW) continue;
-#pragma omp atomic write
+                            // #pragma omp atomic write
                             newq[newC.X * imgW + newC.Y] = true;
                             float dis = Distance(InfoBest[x * imgW + y].first, newC);
                             if (dis < InfoBest[newC.X * imgW + newC.Y].second) {
